@@ -1,0 +1,44 @@
+<style>
+#loading_screen {
+    background-color: #000000;
+    border: medium none;
+    display: none;
+    height: 100%;
+    left: 0;
+    margin: 0;
+    opacity: 0.7;
+    padding: 0;
+    position: fixed;
+    top: 0;
+    width: 100%;
+    z-index: 100;
+    filter: alpha(opacity=70);
+
+}
+.webinar-loading {
+    background-image: url("./img/loading.gif");
+    background-repeat: no-repeat;
+    height: 128px;
+    margin: 200px auto auto;
+    width: 128px;
+    position:relative;
+    top:180px;
+}
+</style>
+
+<div id="loading_screen">
+  <div class="webinar-loading"> </div>
+</div>
+<script type="text/javascript">
+  //show loading div
+	function show_loading()
+	{
+		jQuery("#loading_screen").css('display','block');
+	}
+
+  //hide loading div
+	function hide_loading()
+	{
+		jQuery("#loading_screen").css('display','none');
+	}
+</script>

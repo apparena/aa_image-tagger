@@ -1,0 +1,87 @@
+<?php 
+if( isset( $_GET['aa_inst_id'] ) ) {	
+$aa_inst_id=$_GET['aa_inst_id'];
+	/*********************************************************************************
+	 * The GET parameter will be transferred to the init_session.php automatically!! *
+	 *********************************************************************************/
+	include_once ( '../../init_session.php' );
+} else {
+	die( "invalid session! exiting..." );
+	exit( -1 );
+}
+?>
+
+<div class="admin-getwinner">
+	<div class="page-header">
+		<h1><?php __p("Export participants")?></h1>
+	</div>
+	
+	<form name="Formular" action="admin_export_download.php?aa_inst_id=<?php echo $aa_inst_id; ?>" id="form_export"	method="POST" target="_self" onsubmit="return chkFormular()" class="form-horizontal">
+		<fieldset>
+			<legend><?php __p("Date Range for export")?></legend>
+			<div class="control-group">
+				<label class="control-label" for="from"><?php __p("Start-Date")?></label>
+				<div class="controls">
+					<input type="text" id="from" name="from" />
+				</div>
+				<label class="control-label" for="to"><?php __p("End-Date")?></label>
+				<div class="controls">
+					<input type="text" id="to" name="to" />
+				</div>
+			</div>
+			<div class="control-group">
+				<div class="agreements"><?=$session->config['admin_export_terms']['value']?></div>
+				<label class="checkbox">
+				  <input type="checkbox" name="akzeptiert"> <?php __p("I read and agree to all export terms & conditions")?>
+				</label>
+			</div>
+			<div class="form-actions">
+				<span class="btn btn-primary" onclick="jQuery('#form_export').submit()"><i class="icon-download-alt icon-white"></i> <?php __p("Download")?></span>
+			</div>
+		</fieldset>
+	</form>
+</div>
+
+<div class="modal hide fade" id="accept-terms">
+  <div class="modal-header">
+    <a class="close" data-dismiss="modal">x</a>
+    <h3><?=__p("Accept the terms")?></h3>
+  </div>
+  <div class="modal-body">
+    <p><?=__p("Please accept the export conditions to export data!")?></p>
+  </div>
+  <div class="modal-footer">
+    <a href="#" data-dismiss="modal" class="btn">OK</a>
+  </div>
+</div>
+
+<script>
+$(function() {
+	var dates = $( "#from, #to" ).datepicker({
+		defaultDate: "0",
+		dateFormat: 'dd.mm.yy',
+		changeMonth: false,
+		numberOfMonths: 1,
+		onSelect: function( selectedDate ) {
+			var option = this.id == "from" ? "minDate" : "maxDate",
+				instance = $( this ).data( "datepicker" ),
+				date = $.datepicker.parseDate(
+					instance.settings.dateFormat ||
+					$.datepicker._defaults.dateFormat,
+					selectedDate, instance.settings );
+			dates.not( this ).datepicker( "option", option, date );
+		}
+	});
+});
+function chkFormular () {
+	if (!document.Formular.akzeptiert.checked) {
+		jQuery("#accept-terms").modal()
+		document.Formular.akzeptiert.focus();
+		return false;
+	}  
+};
+
+$(document).ready( function(){
+	hide_loading();
+});
+</script>

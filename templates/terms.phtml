@@ -1,0 +1,31 @@
+<?php 
+	if( isset( $_GET['aa_inst_id'] ) ) {
+		
+		/*********************************************************************************
+		 * The GET parameter will be transferred to the init_session.php automatically!! *
+		 *********************************************************************************/
+		include_once ( '../init_session.php' );
+	
+	} else {
+	
+		die( "invalid session! exiting..." );
+		exit( -1 );
+	}
+?>
+<div class="terms-and-conditions">
+	<div class="page-header well">
+	    <h1><?=__p("Terms & Conditions")?> <small><?=__p("What are the prizes? Who can participate?")?></small></h1>
+	</div>
+	<div class="row-fluid">
+		<div class="terms-body">
+			<?=$session->config['terms_and_conditions']['value'];?>
+		</div>
+	</div>
+</div>
+<script>
+	$(document).ready( function(){
+		
+		hide_loading();
+		
+	});
+</script>
