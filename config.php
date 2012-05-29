@@ -24,5 +24,6 @@ $config_data=array(
 
    $aa_app_id = 157;
    $aa_app_secret = "d346590ff4573aae73d52cfad6c48d3d";
+   $aa_api_key = "d346590ff4573aae73d52cfad6c48d3d";
    
 ?>
