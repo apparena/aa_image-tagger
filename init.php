@@ -2,98 +2,163 @@
 /*
  * Initial process to start the app
  */
-date_default_timezone_set('Europe/Berlin'); // Load config values
-ini_set('session.gc_probability',0); //disable session expired check
-header('P3P: CP=CAO PSA OUR'); //fix ie can not save cookie in iframe problem
-define("ROOT_PATH",realpath(dirname(__FILE__))); //set include path
-require_once ROOT_PATH.'/libs/Frd/Frd.php';
-set_include_path(ROOT_PATH.'/libs/' . PATH_SEPARATOR );
+// Load config values
+date_default_timezone_set('Europe/Berlin');
+
+//fix ie can not save cookie in iframe
+header('P3P: CP=CAO PSA OUR');
+
+require_once 'functions.php';
+
+//auto load
+//set inclclude path
+define("ROOT_PATH",realpath(dirname(__FILE__)));
+set_include_path(ROOT_PATH.'/lib/' . PATH_SEPARATOR .
+   ROOT_PATH.'/modules/' . PATH_SEPARATOR );
 
 /**** init ***/
+require_once ROOT_PATH.'/lib/Frd/functions.php'; 
+require_once ROOT_PATH.'/lib/Frd/Frd.php';
+// Initialize the Zend Autoloader
+require_once "Zend/Loader/Autoloader.php";
+Zend_Loader_Autoloader::getInstance()->setFallbackAutoloader(true);
+
 $config=array(
    'timezone'=>'Europe/Berlin',
    'root_path'=>ROOT_PATH,
    'include_paths'=>array(
-      ROOT_PATH.'/libs',
+      ROOT_PATH.'/lib',
       ROOT_PATH.'/modules',
    ),
+
    'module_path'=>ROOT_PATH.'/modules',
 );
-Frd::init($config);
 
+Frd::init($config);
 //start session
 Zend_Session::start();
-
-/**** config and init other resource ***/
 //necessary files
 require_once ROOT_PATH.'/config.php';
-if(file_exists(ROOT_PATH.'/config_local.php'))
-{
-   require_once ROOT_PATH.'/config_local.php';
-}
-require_once ROOT_PATH.'/libs/AA/functions.php';
-require_once ROOT_PATH.'/libs/fb-php-sdk/src/facebook.php';
-setConfig($config_data);
 
-//set db
+//db
 addDb(array(
    'adapter'=>'MYSQLI',
-   'host'=>getConfig("database_host"),
-   'username'=>getConfig("database_user"),
-   'password'=>getConfig("database_pass"),
-   'dbname'=>getConfig("database_name")
+   'host'=>$database_host,
+   'username'=>$database_user,
+   'password'=>$database_pass,
+   'dbname'=>$database_name,
 ));
 
-// Add translation management
-$translate = new Zend_Translate('csv', ROOT_PATH.'/locale/de.csv', 'de',array('delimiter' => ';'));
-$translate->addTranslation(ROOT_PATH.'/locale/es.csv', 'es');
-$translate->setLocale('de');
-$global->translate=$translate;
+
+
 
 // Initialize App-Manager connection
+$aa_inst_id = "";
+if( isset( $_GET['aa_inst_id'] ) ) {
+	$aa_inst_id = $_GET['aa_inst_id'];
+}
+
+//check canvas redirect
+$fb_page_id=get_page_id();
+if($fb_page_id == false && $aa_inst_id == false)
+{
+   $handle=getModule("canvas_redirect")->getModel("handle");
+   $aa_inst_id=$handle->handle();
+
+   if( $aa_inst_id == false) {
+      //if not instid, redirect to www.facebook.com
+      $link="http://www.facebook.com";
+      redirect(handle_link($link));
+      exit();
+   } else  {
+      $aa = new AA_AppManager(array(
+         'aa_app_id'  => $aa_app_id,
+         'aa_app_secret' => $aa_api_key,
+         'aa_inst_id' => $aa_inst_id
+      ));
+	  $aa->setServerUrl('http://dev.app-arena.com/manager/server/soap4.php' );
+
+      $aa_instance = $aa->getInstance();
+      if(is_array($aa_instance)) {
+         //redirect to fan page
+         $fb_page_url=str_replace("http://www.facebook.com","",$aa_instance['fb_page_url']);
+         $fb_page_url=str_replace("https://www.facebook.com","",$fb_page_url);
+         $fb_page_url="http://www.facebook.com".$fb_page_url."?sk=app_".$aa_instance['fb_app_id'];
+
+         redirect($fb_page_url);
+         exit();
+      } else {
+         //can not get instance
+         $link="http://www.facebook.com";
+         redirect(handle_link($link));
+         exit();
+      }
+   }
+}
+
+// Setup app-manager connection
 $aa = new AA_AppManager(array(
-	'aa_app_id'  => getConfig("aa_app_id"),
-	'aa_app_secret' => getConfig("aa_app_secret"),
-  'aa_inst_id' => ''
+	'aa_app_id'  	=> $aa_app_id,
+	'aa_app_secret' => $aa_api_key,
+	'aa_inst_id' 	=> $aa_inst_id
 ));
+$aa->setServerUrl('http://dev.app-arena.com/manager/server/soap4.php');
 $aa_instance = $aa->getInstance();
+$global = new Zend_Session_Namespace( 'aa_' . $aa_instance['aa_inst_id'] );
+$session = &$global;
+$global->instance = $aa_instance;
 
-// Build up information array about facebook
-$session->fb = array();
-$fb_signed_request = parse_signed_request(getRequest('signed_request'));
-$fb_is_admin = is_admin();
-$fb_is_fan = is_fan();
-$fb_data = array("is_admin" => $fb_is_admin,
-				"is_fan" => $fb_is_fan,
-				"app_data" => json_decode(urldecode(get_app_data()),true),
-				"signed_request" => $fb_signed_request
-				);
-if (isset($fb_signed_request['page']['id'])){
-	$fb_data['fb_page_id'] = $fb_signed_request['page']['id'];
-}
-if (isset($fb_signed_request['user_id'])){
-	$fb_data['fb_user_id'] = $fb_signed_request['user_id'];
-}
-					
-$current_app = array();
-
-$session = new Zend_Session_Namespace( 'aa_' . $aa_instance['aa_inst_id'] );
-$session->config = $aa->getConfig();
-$session->instance = $aa_instance;
-
-foreach($fb_data as $k=>$v)
-{
-   $session->fb[$k] = $v;
+// initialize Facebook data from signed_request (if available)
+if (isset($_REQUEST['signed_request'])){
+	$session->fb = parse_signed_request($_REQUEST['signed_request']);
 }
 
-if(!isset($session->app))
-{
-   $session->app = $current_app;
+// Try to get a the current locale from cookie
+$cur_locale = $session->instance['aa_inst_locale'];
+$cookie_index_locale = 'aa_' . $global->instance['aa_inst_id'] . "_locale";
+$lang_switch = false;
+if (isset($_COOKIE[$cookie_index_locale])) {
+	$cur_locale = $_COOKIE[$cookie_index_locale];
+	$session->app['testme'] = $cur_locale . "_cookie";
+} else {
+	if (isset($session->fb["user"]["locale"]) && $session->fb["user"]["locale"] != "de_DE") {
+		$lang_switch = true;
+	}
 }
+$aa->setLocale($cur_locale);
 
-//echo "aa:".$session->instance["aa_inst_id"];
+$global->config = $aa->getConfig();
+$session->config = $global->config;
+$session->instance = $global->instance;
+$session->app['fb_share_url'] = "https://apps.facebook.com/" . $session->instance['fb_app_url']."/fb_share.php?aa_inst_id=".$session->instance['aa_inst_id'];
 
-
-//Zend_Debug::dump( $session->instance );
-
+// Switch language if activated
+if ( $session->config['admin_lang_activated']['value'] && $lang_switch) {
+	$cur_locale = "en_US";
+	$aa->setLocale($cur_locale);
+	$global->config = $aa->getConfig();
+}
+try {
+	$session->translation = array();
+	$session->translation[$cur_locale] = $aa->getTranslation($cur_locale);
+	//$session->translation['de_DE'] = $aa->getTranslation('de_DE');
+	// Add translation management
+	if (!isset($session->translation[$cur_locale])) {
+		$translate = new Zend_Translate('array',$session->translation[0], $cur_locale);
+	} else {
+		$translate = new Zend_Translate('array',$session->translation[$cur_locale], $cur_locale);
+	}
+	$translate->setLocale($cur_locale);
+	$global->translate=$translate;
+} catch (Exception $e) {
+	if ($session->config['admin_debug_mode']['value']){
+		Zend_Debug::dump($session->translation);
+		echo $e->getMessage();
+		echo $e->getTraceAsString();
+	}
+}
+//log
+app_log_fb();
+// echo "\n".$global->config["tournament"]["value"];
+// echo "\n".$session->config["tournament"]["value"];
 ?>
