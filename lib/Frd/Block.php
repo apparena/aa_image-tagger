@@ -153,7 +153,14 @@
          else
          {
             //render all tempates
-            $html=$this->renderTemplate($this->_templates['main'],$vars);
+            if($this->getContent() != false)
+            {
+               $html=parent::render(false,$vars);
+            }
+            else
+            {
+               $html=$this->renderTemplate($this->_templates['main'],$vars);
+            }
          }
 
          return $html;

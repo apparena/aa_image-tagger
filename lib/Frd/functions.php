@@ -320,10 +320,6 @@ function post($url,$post_array)
    //execute post
    $result = curl_exec($ch);
 
-   if($result == false)
-   {
-      echo curl_error($ch);
-   }
    //close connection
    curl_close($ch);
 
@@ -332,7 +328,10 @@ function post($url,$post_array)
 
 function postFile($url,$name,$filepath,$post_array=array())
 {
-   if(empty($url)){ return false;}
+   if(empty($url))
+   { 
+      return false;
+   }
 
 
    //open connection
@@ -361,9 +360,108 @@ function postFile($url,$name,$filepath,$post_array=array())
    //execute post
    $result = curl_exec($ch);
 
+   if($result == false)
+   {
+      return curl_error($ch);
+   }
    //close connection
    curl_close($ch);
+
 
    return $result;
 }
 
+/**
+* if post failed , use this  to get error
+*/
+/*
+function postError()
+{
+   return curl_error();
+}
+*/
+
+
+/**
+* parse a rewrite url, return the page
+* and set the GET parameter
+*
+* @return string  $page , the default is "index"  , if not rewrited , return false
+*/
+function parse_rewrite_url($baseurl='')
+{
+   $request_uri=$_SERVER['REQUEST_URI'];
+   $request_uri=str_replace($baseurl,'',$request_uri);
+
+   if(strpos($request_uri,".php") !== false)
+   {
+      return false;
+   }
+
+   if(strpos($request_uri,".phtml") !== false)
+   {
+      return false;
+   }
+
+   $request_uri=trim($request_uri,"/");
+   //get get parameters
+   $index=strpos($request_uri,"?");
+   if($index !==  false)
+   {
+      $get_data=substr($request_uri,$index+1);
+      $request_uri=substr($request_uri,0,$index);
+
+      //parse get parameter
+      $get_data=explode("&",$get_data);
+      foreach($get_data as $v)
+      {
+         $v=explode("=",$v);
+         if(count($v) == 2)
+         {
+            $_GET[$v[0]]=$v[1];
+         }
+         else
+         {
+            $_GET[$v[0]]='';
+         }
+      }
+   }
+
+   $data=explode("/",$request_uri);
+
+   //it must be /block/BLOCK_NAME/....
+   if(count($data) < 2)
+   {
+      return false;
+   }
+
+   if($data[0] != "block")
+   {
+      return false;
+   }
+
+   $page=$data[1];
+   unset($data[0]);
+   unset($data[1]);
+
+   $params=array();
+
+   for($i=1;$i<count($data)+1;$i+=2)
+   {
+      if(isset($data[$i+1]))
+      {
+         $params[$data[$i]]=$data[$i+1];
+      }
+      else
+      {
+         $params[$data[$i]]='';
+      }
+   }
+
+   foreach($params as $k=>$v)
+   {
+      $_GET[$k]=$v;
+   }
+
+   return $page;
+}

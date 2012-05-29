@@ -91,6 +91,14 @@
          return $this->getClass($path,'Table','Table');
       }
 
+      function getForm($path)
+      {
+         $params=func_get_args();
+         array_shift($params); //unset path
+
+         return $this->getClass($path,'Form','Form',$params);
+      }
+
       function getTemplatePath($template_path)
       {
          $module_path=getSetting("module_path");
@@ -112,13 +120,13 @@
 
       function getModel($path)
       {
-         return $this->getClass($path);
+         return $this->getClass($path,"Model");
       }
 
       /**
       * class are under  Model
       */
-      function getClass($path,$prefix='Model',$class_prefix=false)
+      function getClass($path,$prefix='Model',$class_prefix=false,$params=array())
       {
          $name=Frd_Loader::pathToClass($path);
          $realpath=Frd_Loader::pathToRealpath($path);
@@ -147,7 +155,7 @@
             $class_name.='_'.$name;
          }
 
-         $class=Frd::_getClass($class_name);
+         $class=Frd::_getClass($class_name,$params);
 
          return $class;
       }

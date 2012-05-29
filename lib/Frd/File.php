@@ -431,7 +431,7 @@
       /**
       * read file content to array
       */
-      function fileToArray($filepath)
+      public static function fileToArray($filepath)
       {
          if(self::isReadable($filepath) == false)
          {
@@ -457,7 +457,7 @@
       /**
       * edit file's content
       */
-      function replaceFile($filepath,$pattern,$replace)
+      public static function replaceFile($filepath,$pattern,$replace)
       {
          if(self::exists($filepath) == false)
          {
@@ -487,7 +487,7 @@
       * edit file's each line
       *
       */
-      function replaceLine($filepath,$pattern,$replace)
+      public static function replaceLine($filepath,$pattern,$replace)
       {
          $rows=self::fileToArray($filepath);
 
@@ -509,7 +509,7 @@
       /**
       * remove lines in the file is it match the pattern
       */
-      function removeLine($filepath,$pattern)
+      public static function removeLine($filepath,$pattern)
       {
          $rows=self::fileToArray($filepath);
 
@@ -536,7 +536,7 @@
       /**
       * create file, if touch exists file, will do nothing
       */
-      function touch($filepath,$time=false,$atime=false)
+      public static function touch($filepath,$time=false,$atime=false)
       {
          if(self::exists($filepath) == false)
          {

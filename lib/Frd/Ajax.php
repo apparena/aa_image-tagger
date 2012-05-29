@@ -17,11 +17,11 @@ class Frd_Ajax
 
    function setFolder($folder)
    {
-      $this->_folder=$folder;
+      $this->_folder=rtrim($folder,'/');
    }
 
    /*
-   function setRequiredParams()
+   function setRequiredParams($params)
    {
    
    }
@@ -76,7 +76,16 @@ class Frd_Ajax
          exit();
       }
 
-      $action($data);
+       $ret=$action($data);
+
+       if(is_string($ret))
+       {
+          echo $ret;
+       }
+       else if(is_array($ret))
+       {
+          echo json_encode($ret);
+       }
    }
 
    //run method
@@ -126,7 +135,7 @@ class Frd_Ajax
 /*
 $ajax=new Frd_Ajax();
 $ajax->setFolder(dirname(__FILE__));
-$ajax->addRequiredParam('aa_inst_id');
+$ajax->addRequiredParam('instid');
 $ajax->setActionParam('action');
 
 $ajax->run();

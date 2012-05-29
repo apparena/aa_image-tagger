@@ -1,7 +1,8 @@
 <?php 
-class Frd_Paginator
+class Frd_Paginator extends Frd_Object
 {
   protected $_db=null;
+  protected $_select=null; // select for get list
 
   protected $_page=1;
   protected $_perpage=10;
@@ -11,7 +12,7 @@ class Frd_Paginator
   protected $_query='';
 
   protected $_param=array();
-  protected $_data=null;
+  //protected $_data=null;
 
   //result ,will used for paginator list
   protected $_total=0;
@@ -29,6 +30,9 @@ class Frd_Paginator
     }
 
     $this->_db=$db;
+
+    $this->_select=$this->getSelect();
+
   }
 
   /**
@@ -99,13 +103,42 @@ class Frd_Paginator
     return $this->_total;
   }
 
+  function _getTotal()
+  {
+     //get total from select
+     if($this->_select != false)
+     {
+        $select->reset("columns");
+        $select->columns("count(*)");
+
+        $select->reset('group');
+        $select->reset('order');
+     }
+  }
+
+  /**
+  * main overwrite method
+  */
+  function getSelect()
+  {
+
+     return false;
+  }
+
   function getList()
   {
+     if($this->_select != false)
+     {
+        $rows=$this->_db->fetchAll($this->_select);
+        return $rows;
+     }
+
   }
 
   /*
    * get html of page link , like  'newest pre 1 2 3 ...next last'
    */
+   /*
   function getPageLink()
   {
     global $global;
@@ -118,7 +151,7 @@ class Frd_Paginator
     if($this->_curpage > 1)
     {
       $param=array(
-        'aa_inst_id'=>$global->aa_inst_id,
+        'instid'=>$global->instid,
         'curpage'=>1,
         'sortname'=>$this->_sortname ,
         'sortorder'=>$this->_sortorder,
@@ -135,7 +168,7 @@ class Frd_Paginator
     if($this->_curpage > 1)
     {
       $param=array(
-        'aa_inst_id'=>$global->aa_inst_id,
+        'instid'=>$global->instid,
         'curpage'=>($this->_curpage-1),
         'sortname'=>$this->_sortname ,
         'sortorder'=>$this->_sortorder,
@@ -150,7 +183,7 @@ class Frd_Paginator
 
     //curpage
     $param=array(
-      'aa_inst_id'=>$global->aa_inst_id,
+      'instid'=>$global->instid,
       'curpage'=>$this->_curpage,
       'sortname'=>$this->_sortname ,
       'sortorder'=>$this->_sortorder,
@@ -163,7 +196,7 @@ class Frd_Paginator
     if($this->_curpage < $totalpage)
     {
       $param=array(
-        'aa_inst_id'=>$global->aa_inst_id,
+        'instid'=>$global->instid,
         'curpage'=>($this->_curpage+1),
         'sortname'=>$this->_sortname ,
         'sortorder'=>$this->_sortorder,
@@ -179,7 +212,7 @@ class Frd_Paginator
     if($this->_curpage < $totalpage)
     {
       $param=array(
-        'aa_inst_id'=>$global->aa_inst_id,
+        'instid'=>$global->instid,
         'curpage'=>$totalpage,
         'sortname'=>$this->_sortname ,
         'sortorder'=>$this->_sortorder,
@@ -194,4 +227,5 @@ class Frd_Paginator
 
     return $html;
   }
+  */
 }

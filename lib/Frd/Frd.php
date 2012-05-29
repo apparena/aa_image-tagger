@@ -64,7 +64,7 @@
       */
       public static function loadFunctions()
       {
-         require_once(dirname(__FILE__).'/Frd/functions.php'); 
+         require_once(dirname(__FILE__).'/functions.php'); 
       }
 
       public static function getClass($str)
@@ -454,6 +454,11 @@
       public static function getApp()
       {
          return self::$app;
+      }
+
+      public static function getFrdLibPath()
+      {
+         return dirname(__FILE__);
       }
 
    }

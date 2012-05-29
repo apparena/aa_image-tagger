@@ -19,12 +19,11 @@
 
       protected $_content=''; //html content
 
-      /*
       function __construct()
       {
-         //parent::__construct();
+         parent::__construct();
+         $this->_isset_script_path=false;
       }
-      */
 
       /**
       * set script path
@@ -59,6 +58,7 @@
       {
          //if not set script path, 
          //set the file's dir path ad script path
+
          if($this->_isset_script_path == false)
          {
             $path=realpath(dirname($file));
@@ -133,7 +133,6 @@
             }
 
             $values=explode(".",$match);
-            //var_dump($values);
 
             if(count($values) == 1 && isset($vars[$match]))
             {
