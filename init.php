@@ -125,7 +125,7 @@ if (isset($_COOKIE[$cookie_index_locale])) {
 		$lang_switch = true;
 	}
 }
-$aa->setLocale($cur_locale);
+// $aa->setLocale($cur_locale);
 
 $global->config = $aa->getConfig();
 $session->config = $global->config;
@@ -135,7 +135,7 @@ $session->app['fb_share_url'] = "https://apps.facebook.com/" . $session->instanc
 // Switch language if activated
 if ( $session->config['admin_lang_activated']['value'] && $lang_switch) {
 	$cur_locale = "en_US";
-	$aa->setLocale($cur_locale);
+// 	$aa->setLocale($cur_locale);
 	$global->config = $aa->getConfig();
 }
 try {
@@ -148,7 +148,7 @@ try {
 	} else {
 		$translate = new Zend_Translate('array',$session->translation[$cur_locale], $cur_locale);
 	}
-	$translate->setLocale($cur_locale);
+// 	$translate->setLocale($cur_locale);
 	$global->translate=$translate;
 } catch (Exception $e) {
 	if ($session->config['admin_debug_mode']['value']){
