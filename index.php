@@ -2,6 +2,8 @@
 	// init app-arena once, use init_session.php later...
  	include_once( "init.php" );
 	$session->app['fb_share_url'] = "https://apps.facebook.com/" . $session->instance['fb_app_url']."/fb_share.php?aa_inst_id=".$session->instance['aa_inst_id'];
+	$user_is_fan = false;
+	$user_is_fan = is_fan();
 ?>
 
 <!doctype html>
@@ -42,8 +44,8 @@
 	<!--[if lt IE 7]><p class=chromeframe>Your browser is <em>ancient!</em> <a href="http://browsehappy.com/">Upgrade to a different browser</a> or <a href="http://www.google.com/chromeframe/?redirect=true">install Google Chrome Frame</a> to experience this site.</p><![endif]-->
 	
 	<?php // Here you can integrate your fangate
-	if ($session->fb['is_fan'] == false && $session->config['check_nofan']['value'] == '1') { ?>
-		<div class="page_non_fans_layer"> 
+	if ($user_is_fan == false && $session->config['check_nofan']['value'] == '1') { ?>
+		<div class="page_non_fans_layer">
 			<div class="img_non_fans">
 				<img src="<?php echo $session->config['page_welcome_nonfans']['value']?>" />
 				
@@ -263,7 +265,7 @@
 		//include_once 'admin/admin_panel.php';?>		
 	<?php } ?>
 	<div id="_debug"></div>
-	<?php if ($session->fb['is_fan'] == true || $session->config['check_nofan']['value'] == 'o'): ?>
+	<?php if ($session->fb['is_fan'] == true || $session->config['check_nofan']['value'] != '1'): ?>
 	<div id="header">
 		
 		<img id="header_img" src="<?=$session->config['image_header']['value']?>" />
