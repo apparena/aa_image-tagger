@@ -265,7 +265,7 @@
 		//include_once 'admin/admin_panel.php';?>		
 	<?php } ?>
 	<div id="_debug"></div>
-	<?php if ($session->fb['is_fan'] == true || $session->config['check_nofan']['value'] != '1'): ?>
+	<?php if ($user_is_fan == true || $session->config['check_nofan']['value'] != '1'): ?>
 	<div id="header">
 		
 		<img id="header_img" src="<?=$session->config['image_header']['value']?>" />
